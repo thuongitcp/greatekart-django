@@ -5,8 +5,8 @@ class Cart(models.Model):
     cart_id = models.CharField(max_length=250, blank=True)
     date_aaded = models.DateTimeField(auto_now_add=True)
 
-    def __unicode__(self):
-        return self.card_id
+    def __str__(self):
+        return self.cart_id
     
 
 class CartItem(models.Model):
