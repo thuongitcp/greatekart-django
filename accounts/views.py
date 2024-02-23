@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib import messages, auth
 from accounts.models import Account
+from carts.models import Cart, CartItem
+from carts.views import _cart_id
 
 from .forms import RegistrationForm
 from django.contrib.auth.decorators import login_required
@@ -56,8 +58,24 @@ def login(request):
         password = request.POST['password']
 
         user = auth.authenticate(email=email, password=password)
+        print('User: ', user)
 
         if user is not None:
+            try:
+                print('Entering inside Try block')
+                cart = Cart.objects.get(cart_id=_cart_id(request))
+                is_cart_item_exists = CartItem.objects.filter(cart=cart).exists()
+                print('KQ is_cart_item_exists ==', is_cart_item_exists)
+                if is_cart_item_exists:
+                    cart_item = CartItem.objects.filter(cart=cart)
+                    print('KQ Cart Item: ', cart_item)
+                    for item in cart_item:
+                        item.user = user
+                        item.save()
+            except:
+                print('Entering inside except block')
+                pass
+
             auth.login(request, user)
             messages.success(request, 'You are now logger in.')
             return redirect('dashboard')
@@ -65,6 +83,8 @@ def login(request):
             messages.error(request, 'Invalid login credentials')
             return redirect('login')
     return render(request, 'accounts/login.html')
+
+
 @login_required(login_url = 'login')
 def logout(request):
     auth.logout(request)
